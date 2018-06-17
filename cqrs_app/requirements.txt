@@ -1,0 +1,5 @@
+nameko
+nameko-sqlalchemy
+mongoengine
+sqlalchemy
+psycopg2-binary

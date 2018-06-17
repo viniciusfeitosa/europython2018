@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  querydb:
+    image: querydb
+    build: ./cqrs_app/query_db/
+    ports:
+      - "5433:5432"
+    restart: always
+
+  commanddb:
+    image: commanddb
+    build: ./cqrs_app/command_db/
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  queue:
+    image: rabbitmq
+    build: ./queue
+    ports:
+        - "15673:15672"
+        - "5673:5672"
+    restart: always
+
+  users_service:
+    image: users_service
+    build: ./cqrs_app
+    volumes:
+      - './cqrs_app:/app'
+    environment:
+      - QUEUE_HOST=amqp://guest:guest@queue
+      - QUERYBD_HOST=mongodb://querydb:27017/
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb:5432/users?sslmode=disable
+    ports:
+      - "80:5000"
+    depends_on:
+      - querydb
+      - commanddb
+      - queue
+    links:
+      - querydb
+      - commanddb
+      - queue
+    restart: always
