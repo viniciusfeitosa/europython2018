@@ -1,3 +1,4 @@
+import enum
 import os
 from datetime import datetime
 from mongoengine import (
@@ -5,18 +6,26 @@ from mongoengine import (
     Document,
     DateTimeField,
     StringField,
+    EmbeddedDocumentListField,
 )
 
 from sqlalchemy import (
     Column,
-    String,
     DateTime,
+    Enum,
+    ForeignKey,
     Index,
+    String,
 )
 from sqlalchemy.ext.declarative import declarative_base
 
 
 Base = declarative_base()
+
+
+class PermissionsType(enum.Enum):
+    admin = 'admin'
+    user = 'user'
 
 
 class UsersCommandModel(Base):
@@ -27,6 +36,16 @@ class UsersCommandModel(Base):
     email = Column(String(length=200))
     description = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+    permission = Column(Enum(PermissionsType), ForeignKey('pemissions.name'))
+
+    __table_args__ = Index('index', 'id', 'email'),
+
+
+class PermissionsCommandModel(Base):
+    __tablename__ = 'permissions'
+
+    name = Column(Enum(PermissionsType), primary_key=True)
+    description = Column(String)
 
     __table_args__ = Index('index', 'id', 'email'),
 
@@ -39,4 +58,11 @@ class UsersQueryModel(Document):
     name = StringField(required=True, max_length=200)
     email = StringField(required=True, max_length=200)
     description = StringField(required=True)
+    permission = StringField(required=True)
     created_at = DateTimeField(default=datetime.utcnow)
+
+
+class UsersPerPermissionsQueryModel(Document):
+    permission = StringField(primary_key=True)
+    description = StringField()
+    users = EmbeddedDocumentListField(UsersQueryModel)
