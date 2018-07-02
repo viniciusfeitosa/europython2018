@@ -4,13 +4,18 @@ content-type: application/json
 {
     "name": "Vinicius Pacheco",
     "email": "vinicius@test.com",
-    "description": "It's just a simple test"
+    "description": "It's just a simple test",
+    "permission": "admin"
 }
 
 ###
 
-GET http://localhost/users/033174ee-7266-11e8-93b6-0242ac160005 HTTP/1.1
+GET http://localhost/users/5402ad34-7db0-11e8-8882-0242ac130005 HTTP/1.1
 
 ###
 
 GET http://localhost/users/1/10 HTTP/1.1
+
+###
+
+GET http://localhost/users/admin/permission HTTP/1.1

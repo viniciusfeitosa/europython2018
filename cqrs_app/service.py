@@ -18,9 +18,7 @@ from nameko.events import event_handler
 from nameko.standalone.rpc import ClusterRpcProxy
 from nameko_sqlalchemy import DatabaseSession
 
-CONFIG = {
-    'AMQP_URI': os.getenv('QUEUE_HOST')
-}
+CONFIG = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
 
 
 class ApiService:
@@ -107,7 +105,7 @@ class Events:
                 filter_by(name=data['permission']).one()
 
             up = UsersPerPermissionsQueryModel(
-                permission=permission.name,
+                permission=data['permission'],
                 description=permission.description,
             )
             up.users.append(
@@ -116,7 +114,7 @@ class Events:
                     name=data['name'],
                     email=data.get('email'),
                     description=data.get('description'),
-                    permission=data.get('permission')
+                    permission=data['permission']
                 )
             )
             up.save()

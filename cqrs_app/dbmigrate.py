@@ -11,13 +11,14 @@ from sqlalchemy.orm import sessionmaker
 def create_db():
     db = create_engine(os.environ.get("COMMANDDB_HOST"))
     Base.metadata.create_all(db)
-    session = sessionmaker(bind=db)
+    Session = sessionmaker(bind=db)
+    session = Session()
     per1 = PermissionsCommandModel(
-        permission=PermissionsType.admin,
+        name=PermissionsType.admin,
         description='Admin is a super user to the app'
     )
     per2 = PermissionsCommandModel(
-        permission=PermissionsType.user,
+        name=PermissionsType.user,
         description='User is just a client to the app'
     )
     session.add_all([per1, per2])

@@ -6,6 +6,7 @@ parent_calls_tracked: 10
 
 DB_URIS:
     "command_stack:Base": ${COMMANDDB_HOST}
+    "events:Base": ${COMMANDDB_HOST}
 
 LOGGING:
     version: 1

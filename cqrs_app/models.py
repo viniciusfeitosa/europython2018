@@ -5,8 +5,9 @@ from mongoengine import (
     connect,
     Document,
     DateTimeField,
+    ListField,
+    ReferenceField,
     StringField,
-    EmbeddedDocumentListField,
 )
 
 from sqlalchemy import (
@@ -35,10 +36,10 @@ class UsersCommandModel(Base):
     name = Column(String(length=200))
     email = Column(String(length=200))
     description = Column(String)
+    permission = Column(Enum(PermissionsType), ForeignKey('permissions.name'))
     created_at = Column(DateTime, default=datetime.utcnow)
-    permission = Column(Enum(PermissionsType), ForeignKey('pemissions.name'))
 
-    __table_args__ = Index('index', 'id', 'email'),
+    __table_args__ = Index('user_index', 'id', 'email'),
 
 
 class PermissionsCommandModel(Base):
@@ -47,7 +48,7 @@ class PermissionsCommandModel(Base):
     name = Column(Enum(PermissionsType), primary_key=True)
     description = Column(String)
 
-    __table_args__ = Index('index', 'id', 'email'),
+    __table_args__ = Index('permission_index', 'name'),
 
 
 connect('users', host=os.environ.get('QUERYBD_HOST'))
@@ -65,4 +66,4 @@ class UsersQueryModel(Document):
 class UsersPerPermissionsQueryModel(Document):
     permission = StringField(primary_key=True)
     description = StringField()
-    users = EmbeddedDocumentListField(UsersQueryModel)
+    users = ListField(ReferenceField(UsersQueryModel))
