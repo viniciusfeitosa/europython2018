@@ -9,6 +9,7 @@ from models import (
     UsersCommandModel,
     UsersQueryModel,
     UsersPerPermissionsQueryModel,
+    UsersStruct,
 )
 
 from nameko.events import EventDispatcher
@@ -100,26 +101,32 @@ class Events:
 
     @event_handler('command_stack', 'permission_user_related')
     def permission_user_related_normalize_db(self, data):
+        user_struct = UsersStruct(
+            id=data['id'],
+            name=data['name'],
+            email=data.get('email'),
+            description=data.get('description'),
+            permission=data['permission']
+        )
         try:
-            permission = self.db.query(PermissionsCommandModel).\
-                filter_by(name=data['permission']).one()
+            per = UsersPerPermissionsQueryModel.objects.get(
+                permission=data['permission']
+            )
+            per.users.append(user_struct)
+            per.save()
+        except mongoengine.DoesNotExist:
+            try:
+                permission = self.db.query(PermissionsCommandModel).\
+                    filter_by(name=data['permission']).one()
 
-            up = UsersPerPermissionsQueryModel(
-                permission=data['permission'],
-                description=permission.description,
-            )
-            up.users.append(
-                UsersQueryModel(
-                    id=data['id'],
-                    name=data['name'],
-                    email=data.get('email'),
-                    description=data.get('description'),
-                    permission=data['permission']
+                up = UsersPerPermissionsQueryModel(
+                    permission=data['permission'],
+                    description=permission.description,
                 )
-            )
-            up.save()
-        except Exception as e:
-            return e
+                up.users.append(user_struct)
+                up.save()
+            except Exception as e:
+                return e
 
 
 class QueryStack:

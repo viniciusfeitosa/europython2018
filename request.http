@@ -3,14 +3,38 @@ content-type: application/json
 
 {
     "name": "Vinicius Pacheco",
-    "email": "vinicius@test.com",
+    "email": "viniciusp@test.com",
     "description": "It's just a simple test",
     "permission": "admin"
 }
 
 ###
 
-GET http://localhost/users/5402ad34-7db0-11e8-8882-0242ac130005 HTTP/1.1
+POST http://localhost/user HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Vinicius Feitosa",
+    "email": "viniciusf@test.com",
+    "description": "It's just a simple test",
+    "permission": "admin"
+}
+
+###
+
+POST http://localhost/user HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Vinicius Pacheco",
+    "email": "viniciusp@test.com",
+    "description": "It's just a simple test",
+    "permission": "user"
+}
+
+###
+
+GET http://localhost/users/de51352a-7e4e-11e8-9bda-0242ac130005 HTTP/1.1
 
 ###
 
@@ -19,3 +43,7 @@ GET http://localhost/users/1/10 HTTP/1.1
 ###
 
 GET http://localhost/users/admin/permission HTTP/1.1
+
+###
+
+GET http://localhost/users/user/permission HTTP/1.1

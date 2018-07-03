@@ -5,8 +5,9 @@ from mongoengine import (
     connect,
     Document,
     DateTimeField,
+    EmbeddedDocument,
+    EmbeddedDocumentField,
     ListField,
-    ReferenceField,
     StringField,
 )
 
@@ -63,7 +64,16 @@ class UsersQueryModel(Document):
     created_at = DateTimeField(default=datetime.utcnow)
 
 
+class UsersStruct(EmbeddedDocument):
+    id = StringField(primary_key=True)
+    name = StringField(required=True, max_length=200)
+    email = StringField(required=True, max_length=200)
+    description = StringField(required=True)
+    permission = StringField(required=True)
+    created_at = DateTimeField(default=datetime.utcnow)
+
+
 class UsersPerPermissionsQueryModel(Document):
     permission = StringField(primary_key=True)
     description = StringField()
-    users = ListField(ReferenceField(UsersQueryModel))
+    users = ListField(EmbeddedDocumentField(UsersStruct))
