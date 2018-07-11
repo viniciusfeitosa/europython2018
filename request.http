@@ -1,4 +1,4 @@
-POST http://localhost/user HTTP/1.1
+POST http://localhost/create_user HTTP/1.1
 content-type: application/json
 
 {
@@ -10,7 +10,7 @@ content-type: application/json
 
 ###
 
-POST http://localhost/user HTTP/1.1
+POST http://localhost/create_user HTTP/1.1
 content-type: application/json
 
 {
@@ -22,7 +22,7 @@ content-type: application/json
 
 ###
 
-POST http://localhost/user HTTP/1.1
+POST http://localhost/create_user HTTP/1.1
 content-type: application/json
 
 {
@@ -34,7 +34,7 @@ content-type: application/json
 
 ###
 
-GET http://localhost/users/de51352a-7e4e-11e8-9bda-0242ac130005 HTTP/1.1
+GET http://localhost/users/44280190-84b6-11e8-a235-0242ac120005 HTTP/1.1
 
 ###
 

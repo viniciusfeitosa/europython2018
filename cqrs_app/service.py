@@ -27,15 +27,19 @@ class ApiService:
     name = 'api'
     query_rpc = RpcProxy('query_stack')
 
-    @http('POST', '/user')
+    @http('POST', '/create_user')
     def post(self, request):
         data = json.loads(request.get_data(as_text=True))
         if not data:
             return 400, 'Invalid payload'
         try:
             with ClusterRpcProxy(CONFIG) as cluster_rpc:
+                data['id'] = str(uuid.uuid1())
                 cluster_rpc.command_stack.create_user.call_async(data)
-            return 201, 'SUCCESS'
+            localtion = {
+                'Location': 'http://localhost/user/{}'.format(data['id'])
+            }
+            return 202, localtion, 'ACCEPTED'
         except Exception as e:
             return 500, e
 
@@ -44,7 +48,7 @@ class ApiService:
         response = self.query_rpc.get_all_users(page, limit)
         return 200, {'Content-Type': 'application/json'}, response
 
-    @http('GET', '/users/<string:user_id>')
+    @http('GET', '/user/<string:user_id>')
     def get_user(self, request, user_id):
         response = self.query_rpc.get_user(user_id)
         return 200, {'Content-Type': 'application/json'}, response
@@ -63,9 +67,8 @@ class CommandStack:
     @rpc
     def create_user(self, data):
         try:
-            id = str(uuid.uuid1())
             user = UsersCommandModel(
-                id=id,
+                id=data['id'],
                 name=data['name'],
                 email=data['email'],
                 description=data['description'],
@@ -73,7 +76,6 @@ class CommandStack:
             )
             self.db.add(user)
             self.db.commit()
-            data['id'] = user.id
             self.dispatch('user_created', data)
             self.dispatch('permission_user_related', data)
             return data
@@ -82,8 +84,8 @@ class CommandStack:
             return e
 
 
-class Events:
-    name = 'events'
+class EventsComponent:
+    name = 'events_component'
     db = DatabaseSession(Base)
 
     @event_handler('command_stack', 'user_created')
