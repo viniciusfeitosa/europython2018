@@ -1,4 +1,5 @@
 import json
+import logging
 import mongoengine
 import os
 import uuid
@@ -35,7 +36,7 @@ class ApiService:
         try:
             with ClusterRpcProxy(CONFIG) as cluster_rpc:
                 data['id'] = str(uuid.uuid1())
-                cluster_rpc.command_stack.create_user.call_async(data)
+                cluster_rpc.command_stack.user_domain.call_async(data)
             localtion = {
                 'Location': 'http://localhost/user/{}'.format(data['id'])
             }
@@ -65,7 +66,7 @@ class CommandStack:
     db = DatabaseSession(Base)
 
     @rpc
-    def create_user(self, data):
+    def user_domain(self, data):
         try:
             user = UsersCommandModel(
                 id=data['id'],
@@ -78,10 +79,9 @@ class CommandStack:
             self.db.commit()
             self.dispatch('user_created', data)
             self.dispatch('permission_user_related', data)
-            return data
         except Exception as e:
             self.db.rollback()
-            return e
+            logging.error(e)
 
 
 class EventsComponent:
@@ -99,7 +99,7 @@ class EventsComponent:
                 permission=data.get('permission')
             ).save()
         except Exception as e:
-            return e
+            logging.error(e)
 
     @event_handler('command_stack', 'permission_user_related')
     def permission_user_related_normalize_db(self, data):
@@ -128,7 +128,7 @@ class EventsComponent:
                 up.users.append(user_struct)
                 up.save()
             except Exception as e:
-                return e
+                logging.error(e)
 
 
 class QueryStack:
@@ -140,9 +140,9 @@ class QueryStack:
             user = UsersQueryModel.objects.get(id=id)
             return user.to_json()
         except mongoengine.DoesNotExist as e:
-            return e
+            return json.dumps({'error': e})
         except Exception as e:
-            return e
+            return json.dumps({'error': e})
 
     @rpc
     def get_all_users(self, page, limit):
@@ -153,7 +153,7 @@ class QueryStack:
             users = UsersQueryModel.objects.skip(offset).limit(limit)
             return users.to_json()
         except Exception as e:
-            return e
+            return json.dumps({'error': e})
 
     @rpc
     def get_users_by_permission(self, permission):
@@ -163,6 +163,6 @@ class QueryStack:
             )
             return per.to_json()
         except mongoengine.DoesNotExist as e:
-            return e
+            return json.dumps({'error': e})
         except Exception as e:
-            return e
+            return json.dumps({'error': e})
