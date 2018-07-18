@@ -78,6 +78,10 @@ class CommandStack:
             self.db.add(user)
             self.db.commit()
             self.dispatch('user_created', data)
+
+            permission = self.db.query(PermissionsCommandModel).\
+                filter_by(name=data['permission']).one()
+            data['permission_description'] = permission.description
             self.dispatch('permission_user_related', data)
         except Exception as e:
             self.db.rollback()
@@ -86,7 +90,6 @@ class CommandStack:
 
 class EventsComponent:
     name = 'events_component'
-    db = DatabaseSession(Base)
 
     @event_handler('command_stack', 'user_created')
     def user_created_normalize_db(self, data):
@@ -111,19 +114,16 @@ class EventsComponent:
             permission=data['permission']
         )
         try:
-            per = UsersPerPermissionsQueryModel.objects.get(
+            up = UsersPerPermissionsQueryModel.objects.get(
                 permission=data['permission']
             )
-            per.users.append(user_struct)
-            per.save()
+            up.users.append(user_struct)
+            up.save()
         except mongoengine.DoesNotExist:
             try:
-                permission = self.db.query(PermissionsCommandModel).\
-                    filter_by(name=data['permission']).one()
-
                 up = UsersPerPermissionsQueryModel(
                     permission=data['permission'],
-                    description=permission.description,
+                    description=data['permission_description'],
                 )
                 up.users.append(user_struct)
                 up.save()
