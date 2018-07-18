@@ -117,18 +117,13 @@ class EventsComponent:
             up = UsersPerPermissionsQueryModel.objects.get(
                 permission=data['permission']
             )
-            up.users.append(user_struct)
-            up.save()
         except mongoengine.DoesNotExist:
-            try:
-                up = UsersPerPermissionsQueryModel(
-                    permission=data['permission'],
-                    description=data['permission_description'],
-                )
-                up.users.append(user_struct)
-                up.save()
-            except Exception as e:
-                logging.error(e)
+            up = UsersPerPermissionsQueryModel(
+                permission=data['permission'],
+                description=data['permission_description'],
+            )
+        up.users.append(user_struct)
+        up.save()
 
 
 class QueryStack:
